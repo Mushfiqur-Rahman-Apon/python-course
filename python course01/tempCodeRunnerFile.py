@@ -1,0 +1,1 @@
+input('Give me some money: ')
