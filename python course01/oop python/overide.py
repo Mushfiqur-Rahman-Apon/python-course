@@ -12,6 +12,7 @@ class Person:
         
 class Cricketer(Person):
     def __init__(self, name, age, height, weight,team) -> None:
+        
         self.team = team  
         super().__init__(name, age, height, weight)
         
