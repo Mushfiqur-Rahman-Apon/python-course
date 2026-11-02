@@ -3,11 +3,10 @@ class School:
         self.name = name
         self.address = address
         self.teachers = {} # {"bangla" : techer_object}
-    
         self.classrooms = {} # {"eight" : classroom_object}
    
     def add_calssroom(self, classroom):
-        self.classrooms[classroom.name] = self.classroom
+        self.classrooms[classroom.name] = classroom
     def add_teacher(self, subject,teacher):
         self.teachers[subject] = teacher
     def student_admission(self, student):
@@ -68,17 +67,17 @@ class School:
         
     def __repr__(self):
         # All Classrooms
-        for key, self.value in self.classrooms.keys():
+        for key, in self.classrooms.keys():
             print(key)
         # All Students
         print("All Students")
         result = ''
         
-        for key,value in self.classrooms.items(): #prottekta
-        #classroom e gelam  
-        result += f"---{key.upper()} Classroom Students\n" 
-        for student in value.students:
-            result += f"{student.name}\n"
+        for key,value in self.classrooms.items(): #prottekta classroom e gelam
+          
+            result += f"---{key.upper()} Classroom Students\n" 
+            for student in value.students:
+                result += f"{student.name}\n"
         print(result)    
         # All Subjects
         subject = ' '
@@ -97,4 +96,4 @@ class School:
                 for k,i in student.marks.items():
                     print(student.name,k,i, student.subject_grade[k])
                 print(student.calculate_final_grade())
-        
+        return ''
