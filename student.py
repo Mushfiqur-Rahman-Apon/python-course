@@ -92,7 +92,7 @@ class Student:
         lbl_dep=Label(std_lbl_info_frame,text="Department",font=("arial",12,"bold"),bg="white")   
         lbl_dep.grid(row=0,column=0,padx=2,sticky=W)
         
-        combo_dep=ttk.Combobox(std_lbl_info_frame,textvariable=self.var_dep,font=("arial",12,"bold"),width=17,state="readonlay")
+        combo_dep=ttk.Combobox(std_lbl_info_frame,textvariable=self.var_dep,font=("arial",12,"bold"),width=17,state="readonly")
         combo_dep["value"]=("select Deartment","IT","Computer","Mechanical","Civil","Electronics","Elctrical")
         combo_dep.current(0)
         combo_dep.grid(row=0,column=1,padx=2,pady=10,sticky=W)
@@ -112,7 +112,7 @@ class Student:
         curunt_year=Label(std_lbl_info_frame,font=("arial",12,"bold"),text="Year:",bg="white")
         curunt_year.grid(row=1,column=0,sticky=W,padx=2,pady=10)
         
-        com_txt_currunt_year=ttk.Combobox(std_lbl_info_frame,textvariable=self.var_semester,state="readonly",
+        com_txt_currunt_year=ttk.Combobox(std_lbl_info_frame,textvariable=self.var_year,state="readonly",
                                                         font=("arial",12,"bold"),width=17)
         com_txt_currunt_year['value']=("Selea Year","2021-2022","2023-2024","2025-2026","2026-2027")
         com_txt_currunt_year.current(0)
@@ -157,7 +157,7 @@ class Student:
         com_txt_div.grid(row=1,column=1,sticky=W,padx=2,pady=7)
         
         # Roll
-        lbl_roll=Label(std_lbl_class_frame,font=("arial",11,"bold"),text="Roll No",bg="white")
+        lbl_roll=Label(std_lbl_class_frame,font=("arial",11,"bold"),text="Roll No:",bg="white")
         lbl_roll.grid(row=1,column=2,sticky=W,padx=2,pady=7)
         
         txt_roll=ttk.Entry(std_lbl_class_frame,width=22,font=("arial",11,"bold"))
@@ -169,7 +169,7 @@ class Student:
                 
         com_txt_gender=ttk.Combobox(std_lbl_class_frame,textvariable=self.var_gender,state="readonly",
                                                                 font=("arial",12,"bold"),width=18)
-        com_txt_gender['value']=("Male","Famale","Other")
+        com_txt_gender['value']=("Male","Female","Other")
         com_txt_gender.current(0)
         com_txt_gender.grid(row=2,column=1,sticky=W,padx=2,pady=7)
         
@@ -306,13 +306,14 @@ class Student:
         self.student_table.column("teacher",width=100)
 
         self.student_table.pack(fill=BOTH,expand=1)
+        self.fetch_data()
         
     def add_data(self):
-        if (self.var_dep.get()=="" or self.va_std_id.get()==""):    
+        if (self.var_dep.get()=="" or self.var_std_id.get()==""):    
             messagebox.showerror("Error", "All Fields Are rquired")
         else:
             try:
-                conn=mysql.connector.connect(host="localhost",username="root",password="Test@123",database="mydata")
+                conn=mysql.connector.connect(host="localhost",username="root",password="12345",database="sys")
                 my_cursur=conn.cursor()
                 my_cursur.execute("insert into student values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(
                                                                                                         self.var_dep.get(),
@@ -332,18 +333,23 @@ class Student:
                                                                                                         
                                                                                                 ))
                 conn.commit()
+                self.fetch_data()
                 conn.close()
                 messagebox.showinfo("Seccess","Student has been added!",parent=self.root)
             except Exception as es:
                 messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)
                     
-                                                                
-                
-        
-        
-    
-        
-           
+    # fetch Function
+    def fetch_data(self):
+        conn=mysql.connector.connect(host="localhost",username="root",password="12345",database="sys")
+        my_cursur=conn.cursor("select * from student")
+        data=my_cursur.fetchall()
+        if len(data)!=0:
+            self.student_table.delete(*self.student_table.get_children())
+            for i in data:
+                self.student_table.insert("",END,values=i)
+            conn.commit()
+        conn.close()    
            
            
            
