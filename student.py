@@ -160,7 +160,7 @@ class Student:
         lbl_roll=Label(std_lbl_class_frame,font=("arial",11,"bold"),text="Roll No:",bg="white")
         lbl_roll.grid(row=1,column=2,sticky=W,padx=2,pady=7)
         
-        txt_roll=ttk.Entry(std_lbl_class_frame,width=22,font=("arial",11,"bold"))
+        txt_roll=ttk.Entry(std_lbl_class_frame,textvariable=self.var_roll,width=22,font=("arial",11,"bold"))
         txt_roll.grid(row=1,column=3,padx=2,pady=7)
         
         # gender
@@ -215,7 +215,7 @@ class Student:
         btn_Add=Button(btn_frame,text="Save",command=self.add_data,font=("arial",11,"bold"),width=17,bg="blue",fg="white")
         btn_Add.grid(row=0,column=0,padx=1)
         
-        btn_update=Button(btn_frame,text="Update",font=("arial",11,"bold"),width=17,bg="blue",fg="white")
+        btn_update=Button(btn_frame,text="Update",command=self.update_data,font=("arial",11,"bold"),width=17,bg="blue",fg="white")
         btn_update.grid(row=0,column=1,padx=1)
         
         
@@ -306,10 +306,11 @@ class Student:
         self.student_table.column("teacher",width=100)
 
         self.student_table.pack(fill=BOTH,expand=1)
+        self.student_table.bind("<ButtonRelease>",self.get_cursor)
         self.fetch_data()
         
     def add_data(self):
-        if (self.var_dep.get()=="" or self.var_std_id.get()==""):    
+        if (self.var_dep.get()=="" or self.var_std_id.get()==""or self.va_std_id.get()==""):    
             messagebox.showerror("Error", "All Fields Are rquired")
         else:
             try:
@@ -342,19 +343,85 @@ class Student:
     # fetch Function
     def fetch_data(self):
         conn=mysql.connector.connect(host="localhost",username="root",password="12345",database="sys")
-        my_cursur=conn.cursor("select * from student")
+        my_cursur=conn.cursor()
+        my_cursur.execute("select * from student")
+        
         data=my_cursur.fetchall()
         if len(data)!=0:
             self.student_table.delete(*self.student_table.get_children())
             for i in data:
                 self.student_table.insert("",END,values=i)
             conn.commit()
-        conn.close()    
+        conn.close()         
+    # Get Cursor    
+    def get_cursor(self,event=""):
+        cursor_row=self.student_table.focus()
+        content=self.student_table.item(cursor_row)  
+        data=content["values"] 
+        
+        self.var_dep.set(data[0])
+        self.var_course.set(data[1])
+        self.var_year.set(data[2])
+        self.var_semester.set(data[3])
+        self.var_std_id.set(data[4])
+        self.var_std_name.set(data[5])
+        self.var_div.set(data[6])
+        self.var_roll.set(data[7])
+        self.var_gender.set(data[8])
+        self.var_dob.set(data[9])
+        self.var_email.set(data[10])
+        self.var_phone.set(data[11])
+        self.var_address.set(data[12])
+        self.var_teacher.set(data[13])
+    
+    def update_data(self):  
+        if (self.var_dep.get()=="" or self.var_std_id.get()==""or self.var_std_id.get()==""):    
+            messagebox.showerror("Error", "All Fields Are rquired")  
+        else:
+            try:
+                update=messagebox.askyesno("Updata","Are you sure update this student data",parent=self.root)
+                if update>0:
+                    conn=mysql.connector.connect(host="localhost",username="root",password="12345",database="sys")
+                    my_cursur=conn.cursor()
+                    my_cursur.execute("update student set Dep%s,course=%s,Year=%s,Semester=%s,Name%s,Division=%s,Roll=%s,Gender=%s,Dos,Email=%s,Phone=%s,Address=%s,Teacher=%s where student_id=%s",(
+                                                                                                                                                         
+                                                                                                                                                           self.var_dep.get(),
+                                                                                                                                                           self.var_course.get(),
+                                                                                                                                                           self.var_year.get(),
+                                                                                                                                                           self.var_semester.get(),
+                                                                                                                                                           self.var_std_name.get(),
+                                                                                                                                                           self.var_div.get(),
+                                                                                                                                                           self.var_roll.get(),
+                                                                                                                                                           self.var_gender.get(),
+                                                                                                                                                           self.var_dob.get(),
+                                                                                                                                                           self.var_email.get(),
+                                                                                                                                                           self.var_phone.get(),
+                                                                                                                                                           self.var_address.get(),
+                                                                                                                                                           self.var_teacher.get(),
+                                                                                                                                                           self.var_std_id.get(),
+
+                                                                                                                                                          ))
+                else:
+                    if not update:
+                        return    
+                conn.commit() 
+                self.fetch_data()
+                conn.close()  
+                 
+                messagebox.showinfo("Success","Student successfully updaed",parent=self.root)          
+            except Exception as es:
+                messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)
            
-           
-           
-           
-           
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
            
         
 if __name__ == "__main__":
