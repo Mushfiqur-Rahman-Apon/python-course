@@ -3,6 +3,8 @@ from tkinter import ttk
 from PIL import Image,ImageTk  #pip instll pillow
 import mysql.connector
 from tkinter import messagebox
+from tkinter import filedialog
+import os
 
 
 
@@ -35,7 +37,7 @@ class Student:
         img = img.resize((540,160), Image.Resampling.LANCZOS)
         self.photoimg = ImageTk.PhotoImage(img)
 
-        self.btn_1=Button(self.root,image=self.photoimg,cursor="hand2")
+        self.btn_1=Button(self.root,command=self.open_imag,image=self.photoimg,cursor="hand2")
         self.btn_1.place(x=0,y=0,width=540,height=160)    
         
         # 2st
@@ -43,7 +45,7 @@ class Student:
         img_2=img_2.resize((540,160), Image.Resampling.LANCZOS)
         self.photoimg_2 = ImageTk.PhotoImage(img_2)
         
-        self.btn_2=Button(self.root,image=self.photoimg_2,cursor="hand2")
+        self.btn_2=Button(self.root,command=self.open_imag_2,image=self.photoimg_2,cursor="hand2")
         self.btn_2.place(x=540,y=0,width=540,height=160)  
     
         # 3st
@@ -51,10 +53,10 @@ class Student:
         img_3=img_3.resize((540,160), Image.Resampling.LANCZOS)
         self.photoimg_3 = ImageTk.PhotoImage(img_3)
         
-        self.btn_1=Button(self.root,image=self.photoimg_3,cursor="hand2")
-        self.btn_1.place(x=1000,y=0,width=540,height=160)    
+        self.btn_3=Button(self.root,command=self.open_imag_3,image=self.photoimg_3,cursor="hand2")
+        self.btn_3.place(x=1000,y=0,width=540,height=160)    
                 
-  # bg image   
+        # bg image   
   
         img_4=Image.open(r"college_images\university.jpg")
         img_4=img_4.resize((1530,710), Image.Resampling.LANCZOS)
@@ -219,10 +221,10 @@ class Student:
         btn_update.grid(row=0,column=1,padx=1)
         
         
-        btn_delete=Button(btn_frame,text="Deleate",font=("arial",11,"bold"),width=17,bg="blue",fg="white")
+        btn_delete=Button(btn_frame,text="Deleate",command=self.delete_data,font=("arial",11,"bold"),width=17,bg="blue",fg="white")
         btn_delete.grid(row=0,column=2,padx=1)
                 
-        btn_reset=Button(btn_frame,text="Reset",font=("arial",11,"bold"),width=17,bg="blue",fg="white")
+        btn_reset=Button(btn_frame,text="Reset",command=self.reset_data,font=("arial",11,"bold"),width=17,bg="blue",fg="white")
         btn_reset.grid(row=0,column=3,padx=1)
                               
         #right Frame
@@ -243,20 +245,23 @@ class Student:
         
         search_by=Label(Search_Frame,font=("arial",11,"bold"),text="Search By:",fg="red",bg="white")
         search_by.grid(row=0,column=0,sticky=W,padx=5)
-                
-        com_txt_search=ttk.Combobox(Search_Frame,state="readonly",
+        
+        # search
+        self.var_com_search=StringVar()        
+        com_txt_search=ttk.Combobox(Search_Frame,textvariable=self.var_com_search,state="readonly",
                                                                 font=("arial",12,"bold"),width=18)
         com_txt_search['value']=("Select Option","Roll","Phone","student_id")
         com_txt_search.current(0)
         com_txt_search.grid(row=0,column=1,sticky=W,padx=5)
         
-        txt_search=ttk.Entry(Search_Frame,width=22,font=("arial",11,"bold"))
+        self.var_search=StringVar()
+        txt_search=ttk.Entry(Search_Frame,textvariable=self.var_search,width=22,font=("arial",11,"bold"))
         txt_search.grid(row=0,column=2,padx=5)
          
-        btn_search=Button(Search_Frame,text="Search",font=("arial",11,"bold"),width=14,bg="blue",fg="white")
+        btn_search=Button(Search_Frame,command=self.search_data,text="Search",font=("arial",11,"bold"),width=14,bg="blue",fg="white")
         btn_search.grid(row=0,column=3,padx=5)
                         
-        btn_ShowAll=Button(Search_Frame,text="Show All",font=("arial",11,"bold"),width=14,bg="blue",fg="white")
+        btn_ShowAll=Button(Search_Frame,command=self.fetch_data,text="Show All",font=("arial",11,"bold"),width=14,bg="blue",fg="white")
         btn_ShowAll.grid(row=0,column=4,padx=5)  
         
         # =============Student Table and Scroll bar=====================     
@@ -310,7 +315,7 @@ class Student:
         self.fetch_data()
         
     def add_data(self):
-        if (self.var_dep.get()=="" or self.var_std_id.get()==""or self.va_std_id.get()==""):    
+        if (self.var_dep.get()=="" or self.var_std_id.get()==""or self.var_std_id.get()==""):    
             messagebox.showerror("Error", "All Fields Are rquired")
         else:
             try:
@@ -383,7 +388,7 @@ class Student:
                 if update>0:
                     conn=mysql.connector.connect(host="localhost",username="root",password="12345",database="sys")
                     my_cursur=conn.cursor()
-                    my_cursur.execute("update student set Dep%s,course=%s,Year=%s,Semester=%s,Name%s,Division=%s,Roll=%s,Gender=%s,Dos,Email=%s,Phone=%s,Address=%s,Teacher=%s where student_id=%s",(
+                    my_cursur.execute("update student set Dep=%s,course=%s,Year=%s,Semester=%s,Name=%s,Division=%s,Roll=%s,Gender=%s,Dob=%s,Email=%s,Phone=%s,Address=%s,Teacher=%s where student_id=%s",(
                                                                                                                                                          
                                                                                                                                                            self.var_dep.get(),
                                                                                                                                                            self.var_course.get(),
@@ -411,13 +416,90 @@ class Student:
                 messagebox.showinfo("Success","Student successfully updaed",parent=self.root)          
             except Exception as es:
                 messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)
-           
+    
+    #Delete
+    def delete_data(self):
+        if self.var_std_id.get()=="":
+            messagebox.showerror("Error","All Fields Are required",parent=self.root)
+        else:
+            try:
+                Delete=messagebox.askyesno("Delete","Are sure delete this student")    
+                if Delete>0:
+                    conn=mysql.connector.connect(host="localhost",username="root",password="12345",database="sys")
+                    my_cursur=conn.cursor()  
+                    sql="delete from student where student_id=%s"
+                    value=(self.var_std_id.get(),)
+                    my_cursur.execute(sql,value)
+                else:
+                    if not Delete:
+                        return
+                conn.commit()
+                self.fetch_data()
+                conn.close()
+                messagebox.showinfo("Delete","Your Student has been Deleted",parent=self.root)         
+            except Exception as es:
+                messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)
   
-  
-  
-  
-  
-  
+    # reset
+    def reset_data(self):
+        self.var_dep.set("Select Department" )
+        self.var_course.set("Select Course")
+        self.var_year.set("Select Year")
+        self.var_semester.set("Select Semester")
+        self.var_std_id.set("")
+        self.var_std_name.set("")
+        self.var_div.set("")
+        self.var_roll.set("")
+        self.var_gender.set("")
+        self.var_dob.set("")
+        self.var_email.set("")
+        self.var_phone.set("")
+        self.var_address.set("")
+        self.var_teacher.set("")
+            
+    # search data
+    def search_data(self):
+        if self.var_com_search.get()=="" or self.var_search.get()=="":
+            messagebox.showerror("Error","Plaese select option")
+        else:
+            try:
+                conn=mysql.connector.connect(host="localhost",username="root",password="12345",database="sys")
+                my_cursur=conn.cursor()
+                my_cursur.execute("select * from student where " +str(self.var_com_search.get())+" LIKE '%"+str(self.var_search.get())+"%'") 
+                data=my_cursur.fetchall()
+                if len(data)!=0:
+                    self.student_table.delete(*self.student_table.get_children())
+                    for i in data:
+                        self.student_table.insert("",END,values=i)
+                    conn.commit() 
+                conn.close() 
+            except Exception as es:
+                messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)          
+    
+    
+    # open image     
+    def open_imag(self):  
+        fln=filedialog.askopenfilename(initialdir=os.getcwd(),title="Open Images",filetypes=(("JPG File",".jpg"),("PNG File",".png"),("All Files","*.*")))     
+        img=Image.open(fln)
+        img_browse=img.resize((540,160), Image.Resampling.LANCZOS)
+        self.photoimg_browse = ImageTk.PhotoImage(img_browse)
+        self.btn_1.config(image=self.photoimg_browse)
+        
+     # open image    
+    def open_imag_2(self):  
+        fln=filedialog.askopenfilename(initialdir=os.getcwd(),title="Open Images",filetypes=(("JPG File",".jpg"),("PNG File",".png"),("All Files","*.*")))     
+        img_1=Image.open(fln)
+        img_browse_1=img_1.resize((540,160), Image.Resampling.LANCZOS)
+        self.photoimg_browse = ImageTk.PhotoImage(img_browse_1)
+        self.btn_2.config(image=self.photoimg_browse_1) 
+        
+     # open image           
+    def open_imag_3(self):  
+        fln=filedialog.askopenfilename(initialdir=os.getcwd(),title="Open Images",filetypes=(("JPG File",".jpg"),("PNG File",".png"),("All Files","*.*")))     
+        img_2=Image.open(fln)
+        img_browse_2=img_2.resize((540,160), Image.Resampling.LANCZOS)
+        self.photoimg_browse_2 = ImageTk.PhotoImage(img_browse_2)
+        self.btn_1.config(image=self.photoimg_browse_2)
   
   
   
